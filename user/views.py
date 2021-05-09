@@ -11,8 +11,57 @@ from rest_framework.views import APIView
 from rest_framework import generics, mixins
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
+
 
 # Create your views here.
+class ArticleModalViewset(viewsets.ModelViewSet): 
+    serializer_class = ArticleSerializer
+    queryset = Article.objects.all()
+
+class ArticleGeneric(viewsets.GenericViewSet,generics.RetrieveUpdateDestroyAPIView,generics.ListCreateAPIView):
+    serializer_class = ArticleSerializer
+    queryset = Article.objects.all()
+
+class ArticleGenericViewset(viewsets.GenericViewSet,mixins.ListModelMixin,mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+    serializer_class = ArticleSerializer
+    queryset = Article.objects.all() 
+
+
+class ArticleViewset(viewsets.ViewSet): 
+    
+    def list(self, request):
+        article = Article.objects.all()
+        serializer = ArticleSerializer(article, many=True)
+        return Response(serializer.data)
+    def create(self, request):
+        serializer = ArticleSerializer(data=request.data) 
+        if serializer.is_valid(): 
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(sreializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+    def retrieve(self, request, pk=None):
+        queryset = Article.objects.all()
+        article = get_object_or_404(queryset, pk=pk)
+        serializer = ArticleSerializer(article)
+        return Response(serializer.data)
+    def update(self, request, pk=None):
+        article = Article.objects.get(pk=pk) 
+        serializer = ArticleSerializer(article, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def destroy(self, request, pk=None):
+        article = Article.objects.get(pk=pk)
+        article.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        
+        
+
 class GenericArticles(generics.RetrieveUpdateDestroyAPIView,generics.ListCreateAPIView):
     
     serializer_class = ArticleSerializer
