@@ -16,6 +16,13 @@ from django.shortcuts import get_object_or_404
 
 
 # Create your views here.
+class HelloWorld(APIView):
+    # authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        context = {'message':'hello world'}
+        return Response(context)
+
 class ArticleModalViewset(viewsets.ModelViewSet): 
     serializer_class = ArticleSerializer
     queryset = Article.objects.all()
